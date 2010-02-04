@@ -1,0 +1,12 @@
+unsplit - Resolve conflicts in Mnesia tables after network split
+
+Author: Ulf Wiger, Erlang Solutions Ltd
+
+
+NOTE: This application is currently a fairly crude prototype,
+      and is not intended for mission-critical tasks (yet).
+
+Documentation will follow, as soon as the approach has been
+verified to work. So far, no Mnesia patches are used, but 
+for it to work really well, some added functionality in
+Mnesia may well be needed.

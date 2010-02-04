@@ -1,0 +1,26 @@
+erl -boot start_sasl -kernel dist_auto_connect once -sname n1 -pa ~/src/unsplit-0.1/ebin -mnesia debug trace
+erl -boot start_sasl -kernel dist_auto_connect once -sname n2 -pa ~/src/unsplit-0.1/ebin -mnesia debug trace
+
+mnesia:start().
+application:start(unsplit).
+rd(test,{key,modified=erlang:now(),value}).
+
+On n2@debian:
+
+mnesia:create_schema([n1@debian,n2@debian]).
+
+mnesia:delete_table(test).
+mnesia:create_table(test,[{ram_copies,[n1@debian,n2@debian]},{attributes,[key,modified,value]},{user_properties,[{unsplit_method,{unsplit_lib,last_modified,[]}}]}]).
+
+mnesia:transaction(fun() -> mnesia:write(#test{key=1,value=a}) end).
+mnesia:transaction(fun() -> mnesia:write(#test{key=2,value=a}) end).
+
+ets:tab2list(test).
+
+
+On n1@debian:
+
+disconnect_node(n2@debian).
+mnesia:transaction(fun() -> mnesia:write(#test{key=2,value=b}) end).
+timer:sleep(3000).
+net_kernel:connect_node(n2@debian).
