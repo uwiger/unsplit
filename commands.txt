@@ -1,5 +1,5 @@
-erl -boot start_sasl -kernel dist_auto_connect once -sname n1 -pa ~/src/unsplit-0.1/ebin -mnesia debug trace
-erl -boot start_sasl -kernel dist_auto_connect once -sname n2 -pa ~/src/unsplit-0.1/ebin -mnesia debug trace
+$ERL_TOP/bin/erl -boot start_sasl -kernel dist_auto_connect once -sname n1 -pa ~/ETC/git/unsplit/ebin -mnesia debug trace
+$ERL_TOP/bin/erl -boot start_sasl -kernel dist_auto_connect once -sname n2 -pa ~/ETC/git/unsplit/ebin -mnesia debug trace
 
 mnesia:start().
 application:start(unsplit).

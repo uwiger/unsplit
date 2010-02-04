@@ -136,21 +136,37 @@ stitch_together(NodeA, NodeB) ->
     end.
 
 do_stitch_together(NodeA, NodeB) ->
-    Tabs = affected_tables(NodeA, NodeB),
+    TabsAndNodes = affected_tables(NodeA, NodeB),
+    Tabs = [T || {T,_} <- TabsAndNodes],
     io:fwrite("Affected tabs = ~p~n", [Tabs]),
     DefaultMethod = default_method(),
     TabMethods = [{T, get_method(T, DefaultMethod)} || T <- Tabs],
     io:fwrite("Methods = ~p~n", [TabMethods]),
-    mnesia:activity(transaction,
-                    fun() ->
-                            mnesia_controller:connect_nodes([NodeB]),
-                            io:fwrite("stitching: ~p~n", [TabMethods]),
-                            stitch_tabs(TabMethods, NodeB)
-                    end).
+    mnesia_controller:connect_nodes(
+      [NodeB],
+      fun(MergeF) ->
+              case MergeF(TabsAndNodes) of
+                  {merged,_,_} = Res ->
+                      show_locks(NodeB),
+                      %% For now, assume that we have merged with the right
+                      %% node, and not with others that could also be
+                      %% consistent (mnesia gurus, how does this work?)
+                      io:fwrite("stitching: ~p~n", [TabMethods]),
+                      stitch_tabs(TabMethods, NodeB),
+                      Res;
+                  Other ->
+                      Other
+              end
+      end).
+
+show_locks(OtherNode) ->
+    io:fwrite("Held locks = ~p~n",
+              [rpc:multicall([node(),OtherNode],
+                             mnesia_locker,get_held_locks,[])]).
 
 stitch_tabs(TabMethods, NodeB) ->
-    Tabs = [Tab || {Tab,_} <- TabMethods],
-    [mnesia:write_lock_table(T) || T <- Tabs],
+%%    Tabs = [Tab || {Tab,_} <- TabMethods],
+%%    [mnesia:write_lock_table(T) || T <- Tabs],
     [do_stitch(TM, NodeB) || TM <- TabMethods].
 
 
@@ -193,6 +209,10 @@ new_strategy(Strategy, S) ->
 
 perform_actions(Actions, #st{table = Tab, remote = Remote} = S) ->
     local_perform_actions(Actions, Tab),
+    %% As we currently merge the two nodes before resolving conflicts,
+    %% we should only write in one place. The hope was that we could
+    %% synchronize the two copies before merging, but this hasn't worked
+    %% out yet.
     ask_remote(Remote, {actions, Tab, Actions}),
     S.
 
@@ -213,10 +233,16 @@ get_remote_obj(Remote, Tab, Key) ->
     ask_remote(Remote, {get_obj, Tab, Key}).
 
 
+%% As it works now, we run inside the mnesia_schema:merge_schema transaction,
+%% telling it to lock the tables we're interested in. This gives us time to
+%% do this, but replication will not be active until the transaction has been
+%% committed, so we have to write dirty explicitly to both copies.
 write_result(Data, Tab) when is_list(Data) ->
     [mnesia:dirty_write(Tab, D) || D <- Data];
+%%    [mnesia:write(Tab, D, write) || D <- Data];
 write_result(Data, Tab) ->
     mnesia:dirty_write(Tab, Data).
+%%    mnesia:write(Tab, Data, write).
 
 
 ask_remote(Remote, Q) ->
@@ -247,15 +273,20 @@ local_perform_actions(Actions, Tab) ->
 affected_tables(NodeA, NodeB) ->
     Both = [NodeA, NodeB],
     Tabs = mnesia:system_info(tables) -- [schema],
-    lists:filter(
-      fun(T) ->
+    lists:foldl(
+      fun(T, Acc) ->
               Nodes = lists:concat(
                         [mnesia:table_info(T, C) ||
                             C <- [ram_copies, disc_copies,
                                   disc_only_copies]]),
-              (Both -- Nodes) == []
-      end, Tabs).
-
+              io:fwrite("nodes_of(~p) = ~p~n", [T, Nodes]),
+              case (Both -- Nodes) of 
+                  [] ->
+                      [{T, Nodes}|Acc];
+                  _ ->
+                      Acc
+              end
+      end, [], Tabs).
 
 
 default_method() ->
