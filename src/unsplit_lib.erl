@@ -1,5 +1,6 @@
 -module(unsplit_lib).
 -export([no_action/2,
+         bag/2,
          last_modified/2,
          last_version/2]).
 
@@ -14,6 +15,14 @@ last_modified(init, S0) ->
     last_version(init, S0 ++ [modified]);
 last_modified(Other, S) ->
     last_version(Other, S).
+
+bag(init, _S0) ->
+    {ok, []};
+bag(done, _) ->
+    ok;
+bag(Objs, S) ->
+    Merged = lists:usort(lists:concat(Objs)),
+    {ok, [{write, Merged}], S}.
 
 last_version(init, [Tab, Attrs, Attr]) ->
     case lists:member(Attr, Attrs) of

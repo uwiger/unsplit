@@ -29,8 +29,8 @@
 %% @end
 
 {application, unsplit,
- [{vsn, "0.2"},
-  {modules, [unsplit,unsplit_lib,unsplit_server,unsplit_vclock]},
+ [{vsn, "@VSN@"},
+  {modules, [@MODULES@]},
   {description, "Merges mnesia tables after net split."},
   {applications, [mnesia]},
   {mod, {unsplit, []}},
