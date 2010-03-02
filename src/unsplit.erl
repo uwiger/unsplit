@@ -31,10 +31,26 @@
 -behaviour(application).
 -behaviour(supervisor).
 
+-export([get_reporter/0,
+         report_inconsistency/4, report_inconsistency/5]).
+
+
+%% application start/stop API
 -export([start/2, stop/1]).
-
-
 -export([init/1]).
+
+
+get_reporter() ->
+    {ok, R} = application:get_env(unsplit, reporter),
+    R.
+
+report_inconsistency(Tab, Key, ObjA, ObjB) ->
+    report_inconsistency(get_reporter(), Tab, Key, ObjA, ObjB).
+
+report_inconsistency(Reporter, Tab, Key, ObjA, ObjB) ->
+    Reporter:inconsistency(Tab, Key, ObjA, ObjB).
+
+
 
 start(_, _) ->
     supervisor:start_link({local,?MODULE}, ?MODULE, []).
@@ -46,5 +62,16 @@ stop(_) ->
 
 init([]) ->
     Children = [{unsplit_server, {unsplit_server, start_link, []},
-                 permanent, 3000, worker, [unsplit_server]}],
+                 permanent, 3000, worker, [unsplit_server]} |
+                reporting_channel()],
     {ok, {{one_for_one, 3, 10}, Children}}.
+
+
+reporting_channel() ->
+    {ok, R} = application:get_env(unsplit, reporter),
+    case R:childspec() of
+        ignore ->
+            [];
+        {_Name, {_M,_F,_A},_,_,_,_} = Child ->
+            [Child]
+    end.

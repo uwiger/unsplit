@@ -30,9 +30,11 @@
 
 {application, unsplit,
  [{vsn, "0.2"},
-  {modules, [unsplit,unsplit_lib,unsplit_server,unsplit_vclock]},
+  {modules, [unsplit,unsplit_lib,unsplit_reporter,unsplit_server,unsplit_vclock]},
   {description, "Merges mnesia tables after net split."},
   {applications, [mnesia]},
   {mod, {unsplit, []}},
-  {env, []}
+  {env, [
+         {reporter, unsplit_reporter}
+        ]}
  ]}.

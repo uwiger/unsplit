@@ -34,5 +34,7 @@
   {description, "Merges mnesia tables after net split."},
   {applications, [mnesia]},
   {mod, {unsplit, []}},
-  {env, []}
+  {env, [
+         {reporter, unsplit_reporter}
+        ]}
  ]}.
