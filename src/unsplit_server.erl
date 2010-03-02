@@ -250,8 +250,12 @@ run_stitch(#st{table = Tab,
       fun(K, Sx) ->
               [_] = A = mnesia:read({Tab,K}),  % assert that A is non-empty
               B = get_remote_obj(Remote, Tab, K),
-              io:fwrite("Calling ~p:~p(~p, ~p, ~p)~n", [M,F,A,B,MSt]),
-              check_return(M:F([{A, B}], MSt), Sx)
+              if A == B ->
+                      Sx;
+                 true ->
+%%%           io:fwrite("Calling ~p:~p(~p, ~p, ~p)~n", [M,F,A,B,MSt]),
+                      check_return(M:F([{A, B}], MSt), Sx)
+              end
       end, St, Keys).
 
 get_remote_obj(Remote, Tab, Key) ->
