@@ -46,19 +46,15 @@
 -define(SERVER, ?MODULE).
 -define(DEFAULT_METHOD, {unsplit_lib, no_action, []}).
 -define(DEFAULT_STRATEGY, all_keys).
--define(TIMEOUT, 10000).
 
 -define(DONE, {?MODULE,done}).
 
 -define(LOCK, {?MODULE, stitch}).
 
-%%====================================================================
-%% API
-%%====================================================================
-%%--------------------------------------------------------------------
-%% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
-%% Description: Starts the server
-%%--------------------------------------------------------------------
+%% @spec start_link() -> {ok, pid()}
+%% @doc Starts the Unsplit server
+%% @end
+%%
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
@@ -229,19 +225,21 @@ check_return(Ret, S) ->
 
 new_strategy(same, S) ->
     S;
-new_strategy(Strategy, S) ->
-    S#st{strategy = Strategy}.
+new_strategy({M,F}, S) ->
+    S#st{strategy = {M, F}};
+new_strategy(all_keys, S) ->
+    S#st{strategy = all_keys}.
 
 perform_actions(Actions, #st{table = Tab, remote = Remote} = S) ->
     local_perform_actions(Actions, Tab),
-    %% As we currently merge the two nodes before resolving conflicts,
-    %% we should only write in one place. The hope was that we could
-    %% synchronize the two copies before merging, but this hasn't worked
-    %% out yet.
     ask_remote(Remote, {actions, Tab, Actions}),
     S.
 
-
+run_stitch(#st{table = Tab,
+	       module = M, function = F, modstate = MSt,
+	       strategy = {Ms,Fs}, remote = Remote} = St) ->
+    {ok, Objs, MSt1} = Ms:Fs(Tab, Remote, MSt),
+    check_return(M:F(Objs, MSt1), St);
 run_stitch(#st{table = Tab, 
                module = M, function = F, modstate = MSt,
                strategy = all_keys, remote = Remote} = St) ->
@@ -253,7 +251,6 @@ run_stitch(#st{table = Tab,
               if A == B ->
                       Sx;
                  true ->
-%%%           io:fwrite("Calling ~p:~p(~p, ~p, ~p)~n", [M,F,A,B,MSt]),
                       check_return(M:F([{A, B}], MSt), Sx)
               end
       end, St, Keys).

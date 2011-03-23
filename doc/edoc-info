@@ -1,0 +1,3 @@
+{application,unsplit}.
+{packages,[]}.
+{modules,[unsplit,unsplit_lib,unsplit_reporter,unsplit_server,unsplit_vclock]}.

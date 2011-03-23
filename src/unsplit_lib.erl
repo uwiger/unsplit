@@ -33,7 +33,10 @@
          last_version/2]).
 
 
-
+%% @spec no_action(start, Tables) -> stop
+%% @doc Minimal merge action - does nothing
+%% @end
+%%
 no_action(start, [Tab|_]) ->
     error_logger:format("Will not merge table ~p~n", [Tab]),
     stop.
