@@ -39,27 +39,41 @@
 -export([start/2, stop/1]).
 -export([init/1]).
 
-
+%% @spec get_reporter() -> module()
+%% @doc Look up the predefined callback module for reporting inconsistencies
+%%
 get_reporter() ->
     {ok, R} = application:get_env(unsplit, reporter),
     R.
 
+%% @spec report_inconsistency(Table, Key, ObjectA, ObjectB) -> ok
+%% @doc Report an inconcistency to the predefined reporter
+%%
 report_inconsistency(Tab, Key, ObjA, ObjB) ->
     report_inconsistency(get_reporter(), Tab, Key, ObjA, ObjB).
 
+%% @spec report_inconsistency(Reporter, Table, Key, ObjectA, ObjectB) -> ok
+%% @doc Report an inconsistency to Reporter (an unsplit_reporter behaviour)
+%%
 report_inconsistency(Reporter, Tab, Key, ObjA, ObjB) ->
     Reporter:inconsistency(Tab, Key, ObjA, ObjB).
 
 
-
+%% @spec start(Type, Arg) -> {ok, pid()}
+%% @doc Application start callback
+%%
 start(_, _) ->
     supervisor:start_link({local,?MODULE}, ?MODULE, []).
 
+%% @spec stop(State) -> ok
+%% @doc Application stop callback
+%%
 stop(_) ->
     ok.
 
 %% Supervisor callback:    
 
+%% @hidden
 init([]) ->
     Children = [{unsplit_server, {unsplit_server, start_link, []},
                  permanent, 3000, worker, [unsplit_server]} |

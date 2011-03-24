@@ -21,6 +21,13 @@
 %%
 %% Created :  2 Mar 2010 by Ulf Wiger <ulf.wiger@erlang-solutions.com>
 %%-------------------------------------------------------------------
+
+%% @doc Unsplit Inconsistency Reporter Behaviour
+%%
+%% This module implements a basic behaviour for reporting inconsistencies 
+%% encountered during the merge procedure.
+%%
+%% @end
 -module(unsplit_reporter).
 
 -export([childspec/0,
@@ -35,13 +42,23 @@ behaviour_info(callbacks) ->
 behaviour_info(_) ->
     undefined.
 
-
-
+%% @spec childspec() -> ignore | supervisor:child_spec()
+%% @doc Return a child start specification for the pre-defined reporter
+%%
+%% See {@link supervisor}.
+%% Use `ignore' if no process should be started.
+%% @end
+%%
 childspec() ->
     %% no need for a process in this case.
     ignore.
 
-
+%% @spec inconsistency(Table, Key, ObjectA, ObjectB) -> ok
+%% @doc Report an inconsistency encountered during the merge
+%% 
+%% The default implementation raises an alarm via the SASL alarm_handler
+%% @end
+%%
 inconsistency(Table, Key, ObjA, ObjB) ->
     alarm_handler:set_alarm({unsplit, inconsistency,
                              [Table, Key, ObjA, ObjB]}).
