@@ -51,6 +51,7 @@
 
 -define(LOCK, {?MODULE, stitch}).
 
+
 %% @spec start_link() -> {ok, pid()}
 %% @doc Starts the Unsplit server
 %% @end
@@ -209,6 +210,8 @@ do_stitch({Tab, Ns, {M, F, XArgs}} = TM, Remote) ->
             ok
     end.
 
+-spec check_return(unsplit:merge_ret(), #st{}) -> #st{}.
+
 check_return(Ret, S) ->
     io:fwrite(" -> ~p~n", [Ret]),
     case Ret of
@@ -222,6 +225,8 @@ check_return(Ret, S) ->
             perform_actions(Actions, new_strategy(Strategy,
                                                   S#st{modstate = St}))
     end.
+
+-spec new_strategy(unsplit:merge_strategy(), #st{}) -> #st{}.
 
 new_strategy(same, S) ->
     S;

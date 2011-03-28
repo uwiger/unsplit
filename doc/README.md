@@ -7,7 +7,7 @@ unsplit - A framework for resolving Mnesia netsplits
 =====================================================
 .
 
-Copyright © 2010 Erlang Solutions Ltd.
+Copyright (c) 2010 Erlang Solutions Ltd.
 
 __Version:__ 0.5
 

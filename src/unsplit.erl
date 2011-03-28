@@ -39,6 +39,7 @@
 -export([start/2, stop/1]).
 -export([init/1]).
 
+
 %% @spec get_reporter() -> module()
 %% @doc Look up the predefined callback module for reporting inconsistencies
 %%

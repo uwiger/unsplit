@@ -14,7 +14,7 @@ A simple Erlang implementation of vector clocks as inspired by Lamport logical c
 
 
 
-Copyright © 2007-2008 Basho Technologies
+Copyright (c) 2007-2008 Basho Technologies
 
 __Authors:__ Justin Sheehy ([`justin@basho.com`](mailto:justin@basho.com)), Andy Gross ([`andy@basho.com`](mailto:andy@basho.com)).
 
@@ -22,43 +22,60 @@ __References__* Leslie Lamport (1978). "Time, clocks, and the ordering of events
 * Friedemann Mattern (1988). "Virtual Time and Global States of Distributed Systems". Workshop on Parallel and Distributed Algorithms: pp. 215-226
 
 
+
 <h2><a name="types">Data Types</a></h2>
 
 
-<a name="type-counter"></a>
 
 
-<h3 class="typedecl">counter()</h3>
 
-<tt>counter() = integer()</tt>
-<a name="type-node"></a>
+<h3 class="typedecl"><a name="type-counter">counter()</a></h3>
 
 
-<h3 class="typedecl">node()</h3>
 
-<tt>node() = term()</tt>
+
+`counter() = integer()`
+
+
+
+<h3 class="typedecl"><a name="type-node">node()</a></h3>
+
+
+
+
+`node() = term()`
+
 
 Nodes can have any term() as a name, but they must differ from each other.
-<a name="type-timestamp"></a>
 
 
-<h3 class="typedecl">timestamp()</h3>
-
-<tt>timestamp() = integer()</tt>
-<a name="type-vc_entry"></a>
+<h3 class="typedecl"><a name="type-timestamp">timestamp()</a></h3>
 
 
-<h3 class="typedecl">vc_entry()</h3>
 
-<tt>vc_entry() = {<a href="#type-node">node()</a>, {<a href="#type-counter">counter()</a>, <a href="#type-timestamp">timestamp()</a>}}</tt>
+
+`timestamp() = integer()`
+
+
+
+<h3 class="typedecl"><a name="type-vc_entry">vc_entry()</a></h3>
+
+
+
+
+`vc_entry() = {[node()](#type-node), {[counter()](#type-counter), [timestamp()](#type-timestamp)}}`
+
 
 The timestamp is present but not used, in case a client wishes to inspect it.
-<a name="type-vclock"></a>
 
 
-<h3 class="typedecl">vclock()</h3>
+<h3 class="typedecl"><a name="type-vclock">vclock()</a></h3>
 
-<tt>vclock() = [vc_entry]</tt>
+
+
+
+`vclock() = [vc_entry]`
+
 
 <h2><a name="index">Function Index</a></h2>
 
@@ -68,14 +85,12 @@ The timestamp is present but not used, in case a client wishes to inspect it.
 common descendant.</td></tr><tr><td valign="top"><a href="#prune-3">prune/3</a></td><td>Possibly shrink the size of a vclock, depending on current age and size.</td></tr></table>
 
 
-<a name="functions"></a>
 
 
-<h2>Function Details</h2>
+<h2><a name="functions">Function Details</a></h2>
 
 
 <a name="all_nodes-1"></a>
-
 
 <h3>all_nodes/1</h3>
 
@@ -83,13 +98,15 @@ common descendant.</td></tr><tr><td valign="top"><a href="#prune-3">prune/3</a><
 
 
 
-<tt>all_nodes(VClock::<a href="#type-vclock">vclock()</a>) -> [<a href="#type-node">node()</a>]</tt>
+
+<pre>all_nodes(VClock::<a href="#type-vclock">vclock()</a>) -> [<a href="#type-node">node()</a>]</pre>
+
+<br></br>
 
 
 
-Return the list of all nodes that have ever incremented VClock.
-<a name="descends-2"></a>
 
+Return the list of all nodes that have ever incremented VClock.<a name="descends-2"></a>
 
 <h3>descends/2</h3>
 
@@ -97,13 +114,15 @@ Return the list of all nodes that have ever incremented VClock.
 
 
 
-<tt>descends(Va::<a href="#type-vclock">vclock()</a>, Vb::<a href="#type-vclock">vclock()</a>) -> bool()</tt>
+
+<pre>descends(Va::<a href="#type-vclock">vclock()</a>, Vb::<a href="#type-vclock">vclock()</a>) -> bool()</pre>
+
+<br></br>
 
 
 
-Return true if Va is a direct descendant of Vb, else false -- remember, a vclock is its own descendant!
-<a name="equal-2"></a>
 
+Return true if Va is a direct descendant of Vb, else false -- remember, a vclock is its own descendant!<a name="equal-2"></a>
 
 <h3>equal/2</h3>
 
@@ -111,14 +130,16 @@ Return true if Va is a direct descendant of Vb, else false -- remember, a vclock
 
 
 
-<tt>equal(VClockA::<a href="#type-vclock">vclock()</a>, VClockB::<a href="#type-vclock">vclock()</a>) -> true | false</tt>
+
+<pre>equal(VClockA::<a href="#type-vclock">vclock()</a>, VClockB::<a href="#type-vclock">vclock()</a>) -> true | false</pre>
+
+<br></br>
+
 
 
 
 Compares two VClocks for equality.
-Not very fast.
-<a name="fresh-0"></a>
-
+Not very fast.<a name="fresh-0"></a>
 
 <h3>fresh/0</h3>
 
@@ -126,13 +147,15 @@ Not very fast.
 
 
 
-<tt>fresh() -> <a href="#type-vclock">vclock()</a></tt>
+
+<pre>fresh() -> <a href="#type-vclock">vclock()</a></pre>
+
+<br></br>
 
 
 
-Create a brand new vclock.
-<a name="get_counter-2"></a>
 
+Create a brand new vclock.<a name="get_counter-2"></a>
 
 <h3>get_counter/2</h3>
 
@@ -140,13 +163,15 @@ Create a brand new vclock.
 
 
 
-<tt>get_counter(Node::<a href="#type-node">node()</a>, VClock::<a href="#type-vclock">vclock()</a>) -> <a href="#type-counter">counter()</a></tt>
+
+<pre>get_counter(Node::<a href="#type-node">node()</a>, VClock::<a href="#type-vclock">vclock()</a>) -> <a href="#type-counter">counter()</a></pre>
+
+<br></br>
 
 
 
-Get the counter value in VClock set from Node.
-<a name="get_timestamp-2"></a>
 
+Get the counter value in VClock set from Node.<a name="get_timestamp-2"></a>
 
 <h3>get_timestamp/2</h3>
 
@@ -154,13 +179,15 @@ Get the counter value in VClock set from Node.
 
 
 
-<tt>get_timestamp(Node::<a href="#type-node">node()</a>, VClock::<a href="#type-vclock">vclock()</a>) -> <a href="#type-timestamp">timestamp()</a></tt>
+
+<pre>get_timestamp(Node::<a href="#type-node">node()</a>, VClock::<a href="#type-vclock">vclock()</a>) -> <a href="#type-timestamp">timestamp()</a></pre>
+
+<br></br>
 
 
 
-Get the timestamp value in a VClock set from Node.
-<a name="increment-2"></a>
 
+Get the timestamp value in a VClock set from Node.<a name="increment-2"></a>
 
 <h3>increment/2</h3>
 
@@ -168,13 +195,15 @@ Get the timestamp value in a VClock set from Node.
 
 
 
-<tt>increment(Node::<a href="#type-node">node()</a>, VClock::<a href="#type-vclock">vclock()</a>) -> <a href="#type-vclock">vclock()</a></tt>
+
+<pre>increment(Node::<a href="#type-node">node()</a>, VClock::<a href="#type-vclock">vclock()</a>) -> <a href="#type-vclock">vclock()</a></pre>
+
+<br></br>
 
 
 
-Increment VClock at Node.
-<a name="merge-1"></a>
 
+Increment VClock at Node.<a name="merge-1"></a>
 
 <h3>merge/1</h3>
 
@@ -182,14 +211,16 @@ Increment VClock at Node.
 
 
 
-<tt>merge(VClocks::[<a href="#type-vclock">vclock()</a>]) -> <a href="#type-vclock">vclock()</a></tt>
+
+<pre>merge(VClocks::[<a href="#type-vclock">vclock()</a>]) -> <a href="#type-vclock">vclock()</a></pre>
+
+<br></br>
+
 
 
 
 Combine all VClocks in the input list into their least possible
-common descendant.
-<a name="prune-3"></a>
-
+common descendant.<a name="prune-3"></a>
 
 <h3>prune/3</h3>
 
@@ -197,10 +228,12 @@ common descendant.
 
 
 
-<tt>prune(V::<a href="#type-vclock">vclock()</a>, Now::integer(), BucketProps::term()) -> <a href="#type-vclock">vclock()</a></tt>
+
+<pre>prune(V::<a href="#type-vclock">vclock()</a>, Now::integer(), BucketProps::term()) -> <a href="#type-vclock">vclock()</a></pre>
+
+<br></br>
+
 
 
 
 Possibly shrink the size of a vclock, depending on current age and size.
-
-_Generated by EDoc, Mar 23 2011, 19:42:01._
