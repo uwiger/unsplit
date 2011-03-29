@@ -244,7 +244,7 @@ run_stitch(#st{table = Tab,
 	       module = M, function = F, modstate = MSt,
 	       strategy = {Ms,Fs}, remote = Remote} = St) ->
     {ok, Objs, MSt1} = Ms:Fs(Tab, Remote, MSt),
-    check_return(M:F(Objs, MSt1), St);
+    run_stitch(check_return(M:F(Objs, MSt1), St));
 run_stitch(#st{table = Tab, 
                module = M, function = F, modstate = MSt,
                strategy = all_keys, remote = Remote} = St) ->
