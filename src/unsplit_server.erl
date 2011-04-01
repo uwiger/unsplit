@@ -341,8 +341,8 @@ get_env(K, Default) ->
             Default;
         {ok, undefined} ->
             Default;
-        {ok, {_,_} = Meth} ->
-            Meth
+        {ok, Value} ->
+	    Value
     end.
 
 get_method(T, Def) ->
