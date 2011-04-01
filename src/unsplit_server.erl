@@ -307,8 +307,7 @@ affected_tables(IslandA, IslandB) ->
       fun(T, Acc) ->
               Nodes = lists:concat(
                         [mnesia:table_info(T, C) ||
-                            C <- [ram_copies, disc_copies,
-                                  disc_only_copies]]),
+			    C <- backend_types()]),
               io:fwrite("nodes_of(~p) = ~p~n", [T, Nodes]),
               case {intersection(IslandA, Nodes), 
                     intersection(IslandB, Nodes)} of 
@@ -318,6 +317,13 @@ affected_tables(IslandA, IslandB) ->
                       Acc
               end
       end, [], Tabs).
+
+backend_types() ->
+    try mnesia:system_info(backend_types)
+    catch
+	exit:_ ->
+	    [ram_copies, disc_copies, disc_only_copies]
+    end.
 
 intersection(A, B) ->
     A -- (A -- B).
