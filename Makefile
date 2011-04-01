@@ -1,4 +1,4 @@
-.PHONY: all compile clean eunit test eqc doc
+.PHONY: all compile clean deps eunit test eqc docs doc
 
 DIRS=src 
 EQC=${HOME}/lib/eqc-1.0.1
@@ -7,12 +7,14 @@ BRANCH=`git branch | awk '/\*/ {print $2}'`
 
 all: compile
 
-compile:
+compile: deps
 	./rebar compile
-
 
 clean:
 	./rebar clean
+
+deps:
+	./rebar get-deps
 
 eunit:
 	./rebar eunit
@@ -23,6 +25,7 @@ test/run_eqc_test.beam: test/run_eqc_test.erl
 test: script test/run_eqc_test.beam
 	./run_eqc.escript -m run_eqc_test -n 1000 -rpt error -pa test
 
+docs: doc
 doc:
 	./rebar doc
 	./mk_readme.escript doc/README.md README.md
