@@ -1,6 +1,6 @@
 %%% @doc
-%%% Unit test for sleep mode
-%%% @copyright
+%%% Test suite for unsplit
+%%% @copyright Nimbuzz B.V.
 %%% @author Ahmed Omar <omar@nimbuzz.nl>
 -module(unsplit_lib_SUITE).
 %%% @end
@@ -25,8 +25,6 @@ init_per_suite(Conf) ->
     Conf.
 
 end_per_suite(_Conf) ->
-    application:stop(unsplit),
-    application:stop(mnesia),
     {ok, Host} = inet:gethostname(),
     ct_slave:stop(list_to_atom(Host), ?SNODE),
     ok.
@@ -73,6 +71,3 @@ split(_Conf)->
 compare_table_size(RemoteNode, Table)->
     rpc:call(RemoteNode, mnesia, table_info,[Table, size])==
         mnesia:table_info(Table, size).
-print_table_size(RemoteNode, Table)->
-    ct:print("~p, ~p~n",[rpc:call(RemoteNode, mnesia, table_info,[Table, size]),
-        mnesia:table_info(Table, size)]).
