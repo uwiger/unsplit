@@ -1,9 +1,6 @@
-Module unsplit_vclock
-=====================
 
 
-<h1>Module unsplit_vclock</h1>
-
+#Module unsplit_vclock#
 * [Description](#description)
 * [Data Types](#types)
 * [Function Index](#index)
@@ -21,86 +18,75 @@ __Authors:__ Justin Sheehy ([`justin@basho.com`](mailto:justin@basho.com)), Andy
 __References__* Leslie Lamport (1978). "Time, clocks, and the ordering of events in a distributed system". Communications of the ACM 21 (7): 558-565.
 * Friedemann Mattern (1988). "Virtual Time and Global States of Distributed Systems". Workshop on Parallel and Distributed Algorithms: pp. 215-226
 
+<a name="types"></a>
 
-
-<h2><a name="types">Data Types</a></h2>
-
-
-
-
-
-<h3 class="typedecl"><a name="type-counter">counter()</a></h3>
+##Data Types##
 
 
 
 
-`counter() = integer()`
+###<a name="type-counter">counter()</a>##
 
 
 
-<h3 class="typedecl"><a name="type-node">node()</a></h3>
+<pre>counter() = integer()</pre>
 
 
 
+###<a name="type-node">node()</a>##
 
-`node() = term()`
+
+
+<pre>node() = term()</pre>
 
 
 Nodes can have any term() as a name, but they must differ from each other.
 
 
-<h3 class="typedecl"><a name="type-timestamp">timestamp()</a></h3>
+###<a name="type-timestamp">timestamp()</a>##
 
 
 
-
-`timestamp() = integer()`
-
-
-
-<h3 class="typedecl"><a name="type-vc_entry">vc_entry()</a></h3>
+<pre>timestamp() = integer()</pre>
 
 
 
+###<a name="type-vc_entry">vc_entry()</a>##
 
-`vc_entry() = {[node()](#type-node), {[counter()](#type-counter), [timestamp()](#type-timestamp)}}`
+
+
+<pre>vc_entry() = {node(), {<a href="#type-counter">counter()</a>, <a href="#type-timestamp">timestamp()</a>}}</pre>
 
 
 The timestamp is present but not used, in case a client wishes to inspect it.
 
 
-<h3 class="typedecl"><a name="type-vclock">vclock()</a></h3>
+###<a name="type-vclock">vclock()</a>##
 
 
 
+<pre>vclock() = [vc_entry]</pre>
+<a name="index"></a>
 
-`vclock() = [vc_entry]`
-
-
-<h2><a name="index">Function Index</a></h2>
-
+##Function Index##
 
 
 <table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#all_nodes-1">all_nodes/1</a></td><td>Return the list of all nodes that have ever incremented VClock.</td></tr><tr><td valign="top"><a href="#descends-2">descends/2</a></td><td>Return true if Va is a direct descendant of Vb, else false -- remember, a vclock is its own descendant!</td></tr><tr><td valign="top"><a href="#equal-2">equal/2</a></td><td>Compares two VClocks for equality.</td></tr><tr><td valign="top"><a href="#fresh-0">fresh/0</a></td><td>Create a brand new vclock.</td></tr><tr><td valign="top"><a href="#get_counter-2">get_counter/2</a></td><td>Get the counter value in VClock set from Node.</td></tr><tr><td valign="top"><a href="#get_timestamp-2">get_timestamp/2</a></td><td>Get the timestamp value in a VClock set from Node.</td></tr><tr><td valign="top"><a href="#increment-2">increment/2</a></td><td>Increment VClock at Node.</td></tr><tr><td valign="top"><a href="#merge-1">merge/1</a></td><td>Combine all VClocks in the input list into their least possible
 common descendant.</td></tr><tr><td valign="top"><a href="#prune-3">prune/3</a></td><td>Possibly shrink the size of a vclock, depending on current age and size.</td></tr></table>
 
 
+<a name="functions"></a>
 
-
-<h2><a name="functions">Function Details</a></h2>
-
+##Function Details##
 
 <a name="all_nodes-1"></a>
 
-<h3>all_nodes/1</h3>
+###all_nodes/1##
 
 
 
 
-
-
-<pre>all_nodes(VClock::<a href="#type-vclock">vclock()</a>) -> [<a href="#type-node">node()</a>]</pre>
-
+<pre>all_nodes(VClock::<a href="#type-vclock">vclock()</a>) -> [node()]</pre>
 <br></br>
 
 
@@ -108,15 +94,12 @@ common descendant.</td></tr><tr><td valign="top"><a href="#prune-3">prune/3</a><
 
 Return the list of all nodes that have ever incremented VClock.<a name="descends-2"></a>
 
-<h3>descends/2</h3>
-
-
+###descends/2##
 
 
 
 
 <pre>descends(Va::<a href="#type-vclock">vclock()</a>, Vb::<a href="#type-vclock">vclock()</a>) -> bool()</pre>
-
 <br></br>
 
 
@@ -124,15 +107,12 @@ Return the list of all nodes that have ever incremented VClock.<a name="descends
 
 Return true if Va is a direct descendant of Vb, else false -- remember, a vclock is its own descendant!<a name="equal-2"></a>
 
-<h3>equal/2</h3>
-
-
+###equal/2##
 
 
 
 
 <pre>equal(VClockA::<a href="#type-vclock">vclock()</a>, VClockB::<a href="#type-vclock">vclock()</a>) -> true | false</pre>
-
 <br></br>
 
 
@@ -141,15 +121,12 @@ Return true if Va is a direct descendant of Vb, else false -- remember, a vclock
 Compares two VClocks for equality.
 Not very fast.<a name="fresh-0"></a>
 
-<h3>fresh/0</h3>
-
-
+###fresh/0##
 
 
 
 
 <pre>fresh() -> <a href="#type-vclock">vclock()</a></pre>
-
 <br></br>
 
 
@@ -157,15 +134,12 @@ Not very fast.<a name="fresh-0"></a>
 
 Create a brand new vclock.<a name="get_counter-2"></a>
 
-<h3>get_counter/2</h3>
+###get_counter/2##
 
 
 
 
-
-
-<pre>get_counter(Node::<a href="#type-node">node()</a>, VClock::<a href="#type-vclock">vclock()</a>) -> <a href="#type-counter">counter()</a></pre>
-
+<pre>get_counter(Node::node(), VClock::<a href="#type-vclock">vclock()</a>) -> <a href="#type-counter">counter()</a></pre>
 <br></br>
 
 
@@ -173,15 +147,12 @@ Create a brand new vclock.<a name="get_counter-2"></a>
 
 Get the counter value in VClock set from Node.<a name="get_timestamp-2"></a>
 
-<h3>get_timestamp/2</h3>
+###get_timestamp/2##
 
 
 
 
-
-
-<pre>get_timestamp(Node::<a href="#type-node">node()</a>, VClock::<a href="#type-vclock">vclock()</a>) -> <a href="#type-timestamp">timestamp()</a></pre>
-
+<pre>get_timestamp(Node::node(), VClock::<a href="#type-vclock">vclock()</a>) -> <a href="#type-timestamp">timestamp()</a></pre>
 <br></br>
 
 
@@ -189,15 +160,12 @@ Get the counter value in VClock set from Node.<a name="get_timestamp-2"></a>
 
 Get the timestamp value in a VClock set from Node.<a name="increment-2"></a>
 
-<h3>increment/2</h3>
+###increment/2##
 
 
 
 
-
-
-<pre>increment(Node::<a href="#type-node">node()</a>, VClock::<a href="#type-vclock">vclock()</a>) -> <a href="#type-vclock">vclock()</a></pre>
-
+<pre>increment(Node::node(), VClock::<a href="#type-vclock">vclock()</a>) -> <a href="#type-vclock">vclock()</a></pre>
 <br></br>
 
 
@@ -205,15 +173,12 @@ Get the timestamp value in a VClock set from Node.<a name="increment-2"></a>
 
 Increment VClock at Node.<a name="merge-1"></a>
 
-<h3>merge/1</h3>
-
-
+###merge/1##
 
 
 
 
 <pre>merge(VClocks::[<a href="#type-vclock">vclock()</a>]) -> <a href="#type-vclock">vclock()</a></pre>
-
 <br></br>
 
 
@@ -222,15 +187,12 @@ Increment VClock at Node.<a name="merge-1"></a>
 Combine all VClocks in the input list into their least possible
 common descendant.<a name="prune-3"></a>
 
-<h3>prune/3</h3>
-
-
+###prune/3##
 
 
 
 
 <pre>prune(V::<a href="#type-vclock">vclock()</a>, Now::integer(), BucketProps::term()) -> <a href="#type-vclock">vclock()</a></pre>
-
 <br></br>
 
 

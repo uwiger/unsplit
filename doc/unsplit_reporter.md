@@ -1,9 +1,6 @@
-Module unsplit_reporter
-=======================
 
 
-<h1>Module unsplit_reporter</h1>
-
+#Module unsplit_reporter#
 * [Description](#description)
 * [Function Index](#index)
 * [Function Details](#functions)
@@ -11,36 +8,28 @@ Module unsplit_reporter
 
 Unsplit Inconsistency Reporter Behaviour.
 
+<a name="description"></a>
 
-
-__This module defines the `unsplit_reporter` behaviour.__
-<br></br>
- Required callback functions: `childspec/0`, `inconsistency/4`.
-
-<h2><a name="description">Description</a></h2>
-
+##Description##
 
 
 This module implements a basic behaviour for reporting inconsistencies
 encountered during the merge procedure.
+<a name="index"></a>
 
-
-<h2><a name="index">Function Index</a></h2>
-
+##Function Index##
 
 
 <table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#behaviour_info-1">behaviour_info/1</a></td><td></td></tr><tr><td valign="top"><a href="#childspec-0">childspec/0</a></td><td>Return a child start specification for the pre-defined reporter.</td></tr><tr><td valign="top"><a href="#inconsistency-4">inconsistency/4</a></td><td>Report an inconsistency encountered during the merge.</td></tr></table>
 
 
+<a name="functions"></a>
 
-
-<h2><a name="functions">Function Details</a></h2>
-
+##Function Details##
 
 <a name="behaviour_info-1"></a>
 
-<h3>behaviour_info/1</h3>
-
+###behaviour_info/1##
 
 
 
@@ -49,15 +38,12 @@ encountered during the merge procedure.
 
 <a name="childspec-0"></a>
 
-<h3>childspec/0</h3>
-
-
+###childspec/0##
 
 
 
 
 <pre>childspec() -> ignore | <a href="supervisor.md#type-child_spec">supervisor:child_spec()</a></pre>
-
 <br></br>
 
 
@@ -70,15 +56,12 @@ Return a child start specification for the pre-defined reporter
 See [`supervisor`](supervisor.md).
 Use `ignore` if no process should be started.<a name="inconsistency-4"></a>
 
-<h3>inconsistency/4</h3>
+###inconsistency/4##
 
 
 
 
-
-
-<pre>inconsistency(Table, Key, ObjA::ObjectA, ObjB::ObjectB) -> ok</pre>
-
+<pre>inconsistency(Table, Key, ObjA::ObjectA, ObjB::ObjectB) -&gt; ok</pre>
 <br></br>
 
 

@@ -10,7 +10,8 @@
 
 %%% External exports
 -compile(export_all).
--define(ERL_FLAGS, "-kernel dist_auto_connect once -pa ../../ -pa ../../../ebin/").
+%% -define(ERL_FLAGS, "-kernel dist_auto_connect once -pa ../../ -pa ../../../ebin/").
+-define(ERL_FLAGS, "-kernel dist_auto_connect once").
 -define(TABLE, test1).
 -define(NODES, ['mn1@localhost', 'mn2@localhost']).
 -define(DISCONNECT_TIME, 4000).
@@ -27,11 +28,15 @@ init_per_suite(Conf) ->
     DisconnectTime = ct:get_config(disconnect_time, ?DISCONNECT_TIME),
     UnsplitTimeout = ct:get_config(unsplit_timeout, ?UNSPLIT_TIMEOUT),
     Host = get_host(),
+    ErlFlags = lists:flatten([?ERL_FLAGS,
+			      get_path_flags(),
+			     " -pa ", filename:absname(
+					filename:dirname(code:which(?MODULE)))]),
+    ct:print("ErlFlags = ~p~n", [ErlFlags]),
     StartNode = fun(Node)->
                         ct:print("starting node ~p, on host ~p ~n",[Node, Host]),
                         {ok, NodeName} = ct_slave:start(Host, Node,
-                                                        [{erl_flags,
-                                                          ?ERL_FLAGS}]),
+                                                        [{erl_flags, ErlFlags}]),
                         NodeName
                 end,
 
@@ -140,6 +145,12 @@ write(Records)->
     mnesia:transaction(Trans).
 
 get_host()->
-    {ok, HostS} = inet:gethostname(),
-    list_to_atom(HostS).
+    [_, H] = re:split(atom_to_list(node()),"@",[{return,list}]),
+    list_to_atom(H).
+    %% {ok, HostS} = inet:gethostname(),
+    %% list_to_atom(HostS).
 
+get_path_flags() ->
+    [ [[" -",atom_to_list(K)," ",D] || D <- V]
+      || {K,V} <- init:get_arguments(),
+	 K == pa orelse K == pz].

@@ -1,13 +1,9 @@
 
 
-<h1>The unsplit application</h1>
+#unsplit - A framework for resolving Mnesia netsplits#
 
-unsplit - A framework for resolving Mnesia netsplits
 
-=====================================================
-.
-
-Copyright © 2010 Erlang Solutions Ltd.
+Copyright (c) 2010 Erlang Solutions Ltd.
 
 __Version:__ 0.5
 
@@ -72,12 +68,11 @@ and the fetched data will be handed to the merge function as:
 
 The return value, `ret()` is defined as:
 
-
 <pre>
 ret() :: stop
-| {ok, state()}
-| {ok, actions(), state()}
-| {ok, actions(), strategy(), state()}
+       | {ok, state()}
+       | {ok, actions(), state()}
+       | {ok, actions(), strategy(), state()}
 
 actions() :: [action()]
 
@@ -85,7 +80,6 @@ action() :: {write, Objects} | {delete, Objects}
 
 strategy() :: all_keys | {ModS, FunS}
 </pre>
-
 
 
 
@@ -117,14 +111,13 @@ running, but is not found on the other side. `[{[{mytab,2,a}], [{mytab,2,b}]}]`
 would mean that conflicting versions of the object `{mytab,2}` were found.
 
 
-<h2 class="indextitle">Modules</h2>
-
+##Modules##
 
 
 <table width="100%" border="0" summary="list of modules">
-<tr><td><a href="unsplit/blob/master/doc/unsplit.md" class="module">unsplit</a></td></tr>
-<tr><td><a href="unsplit/blob/master/doc/unsplit_lib.md" class="module">unsplit_lib</a></td></tr>
-<tr><td><a href="unsplit/blob/master/doc/unsplit_reporter.md" class="module">unsplit_reporter</a></td></tr>
-<tr><td><a href="unsplit/blob/master/doc/unsplit_server.md" class="module">unsplit_server</a></td></tr>
-<tr><td><a href="unsplit/blob/master/doc/unsplit_vclock.md" class="module">unsplit_vclock</a></td></tr></table>
+<tr><td><a href="http://github.com/esl/unsplit/blob/master/doc/unsplit.md" class="module">unsplit</a></td></tr>
+<tr><td><a href="http://github.com/esl/unsplit/blob/master/doc/unsplit_lib.md" class="module">unsplit_lib</a></td></tr>
+<tr><td><a href="http://github.com/esl/unsplit/blob/master/doc/unsplit_reporter.md" class="module">unsplit_reporter</a></td></tr>
+<tr><td><a href="http://github.com/esl/unsplit/blob/master/doc/unsplit_server.md" class="module">unsplit_server</a></td></tr>
+<tr><td><a href="http://github.com/esl/unsplit/blob/master/doc/unsplit_vclock.md" class="module">unsplit_vclock</a></td></tr></table>
 

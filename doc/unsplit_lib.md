@@ -1,9 +1,6 @@
-Module unsplit_lib
-==================
 
 
-<h1>Module unsplit_lib</h1>
-
+#Module unsplit_lib#
 * [Description](#description)
 * [Function Index](#index)
 * [Function Details](#functions)
@@ -13,41 +10,35 @@ Predefined merge functions.
 
 
 
-__Authors:__ : Ulf Wiger ([`ulf.wiger@erlang-solutions.com`](mailto:ulf.wiger@erlang-solutions.com)).
+__Authors:__ : Ulf Wiger ([`ulf.wiger@erlang-solutions.com`](mailto:ulf.wiger@erlang-solutions.com)).<a name="description"></a>
 
-<h2><a name="description">Description</a></h2>
-
+##Description##
 
 
 
 
 This module implements a few merge functions that can be used.
 
+<a name="index"></a>
 
-
-<h2><a name="index">Function Index</a></h2>
-
+##Function Index##
 
 
 <table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#bag-2">bag/2</a></td><td>Default <code>bag</code> merge; removes duplicate objects.</td></tr><tr><td valign="top"><a href="#last_modified-2">last_modified/2</a></td><td>Keeps the last modified object, based on the <code>modified</code> attribute.</td></tr><tr><td valign="top"><a href="#last_version-2">last_version/2</a></td><td>Picks the object with the greatest value of a given attribute.</td></tr><tr><td valign="top"><a href="#no_action-2">no_action/2</a></td><td>Minimal merge action - does nothing.</td></tr><tr><td valign="top"><a href="#vclock-2">vclock/2</a></td><td></td></tr></table>
 
 
+<a name="functions"></a>
 
-
-<h2><a name="functions">Function Details</a></h2>
-
+##Function Details##
 
 <a name="bag-2"></a>
 
-<h3>bag/2</h3>
-
-
+###bag/2##
 
 
 
 
 <pre>bag(Objs::Phase, S0::State) -> <a href="#type-merge_ret">merge_ret()</a></pre>
-
 <br></br>
 
 
@@ -55,15 +46,12 @@ This module implements a few merge functions that can be used.
 
 Default `bag` merge; removes duplicate objects<a name="last_modified-2"></a>
 
-<h3>last_modified/2</h3>
-
-
+###last_modified/2##
 
 
 
 
 <pre>last_modified(Other::Phase, S0::State) -> <a href="#type-merge_ret">merge_ret()</a></pre>
-
 <br></br>
 
 
@@ -76,15 +64,12 @@ Keeps the last modified object, based on the `modified` attribute
 This function assumes that the table to be merged contains objects with
 a `modified` attribute.<a name="last_version-2"></a>
 
-<h3>last_version/2</h3>
-
-
+###last_version/2##
 
 
 
 
 <pre>last_version(Objs::Phase, S::State) -> <a href="#type-merge_ret">merge_ret()</a></pre>
-
 <br></br>
 
 
@@ -106,15 +91,12 @@ e.g. by adding the following user property to the table:
 The function will choose the object that has the greatest value in the
 position given by `Attr`.<a name="no_action-2"></a>
 
-<h3>no_action/2</h3>
+###no_action/2##
 
 
 
 
-
-
-<pre>no_action(X1::init, X2::State) -> stop</pre>
-
+<pre>no_action(X1::init, X2::State) -&gt; stop</pre>
 <br></br>
 
 
@@ -122,8 +104,7 @@ position given by `Attr`.<a name="no_action-2"></a>
 
 Minimal merge action - does nothing<a name="vclock-2"></a>
 
-<h3>vclock/2</h3>
-
+###vclock/2##
 
 
 
