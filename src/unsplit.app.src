@@ -23,7 +23,7 @@
 %%-------------------------------------------------------------------
 %%
 %% @doc Framework for merging mnesia tables after netsplit
-%% 
+%%
 %% <p>...</p>
 %%
 %% @end
@@ -33,6 +33,7 @@
   {modules, []},
   {description, "Merges mnesia tables after net split."},
   {applications, [mnesia]},
+  {registered, []},
   {mod, {unsplit, []}},
   {env, [
          {reporter, unsplit_reporter}
