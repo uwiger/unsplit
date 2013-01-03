@@ -10,3 +10,8 @@
 		    | {ok, any()}
 		    | {ok, merge_actions(), any()}
 		    | {ok, merge_actions(), merge_strategy(), any()}.
+
+-type log_fun() :: fun((LogType :: log_type(), Message :: string()) -> 'ok').
+
+-type log_type() :: 'error' | 'normal'.
+

@@ -41,7 +41,7 @@
 %% @end
 %%
 no_action(init, [Tab|_]) ->
-    error_logger:format("Will not merge table ~p~n", [Tab]),
+    unsplit:log_write(error, "Will not merge table ~p~n", [Tab]),
     stop.
 
 %% @spec last_modified(Phase, State) -> merge_ret()
@@ -81,11 +81,11 @@ bag(Objs, S) ->
 last_version(init, [Tab, Attrs, Attr]) ->
     case lists:member(Attr, Attrs) of
         false ->
-            error_logger:format("Cannot merge table ~p."
-                                "Missing ~p attribute~n", [Tab, Attr]),
+            unsplit:log_write(error, "Cannot merge table ~p."
+                                     "Missing ~p attribute~n", [Tab, Attr]),
             stop;
         true ->
-            io:fwrite("Starting merge of ~p (~p)~n", [Tab, Attrs]),
+            unsplit:log_write(normal, "Starting merge of ~p (~p)~n", [Tab, Attrs]),
             {ok, {Tab, pos(Attr, Tab, Attrs)}}
     end;
 last_version(done, _S) ->
@@ -99,11 +99,11 @@ last_version(Objs, {T, P} = S) when is_list(Objs) ->
 vclock(init, [Tab, Attrs, Attr]) ->
     case lists:member(Attr, Attrs) of
         false ->
-            error_logger:format("Cannot merge table ~p."
-                                "Missing ~p attribute~n", [Tab, Attr]),
+            unsplit:log_write(error, "Cannot merge table ~p."
+                                     "Missing ~p attribute~n", [Tab, Attr]),
             stop;
         true ->
-            io:fwrite("Starting merge of ~p (~p)~n", [Tab, Attrs]),
+            unsplit:log_write(normal, "Starting merge of ~p (~p)~n", [Tab, Attrs]),
             {ok, {Tab, pos(Attr, Tab, Attrs)}}
     end;
 vclock(done, _) ->
@@ -127,14 +127,14 @@ vclock(Objs, {T, P} = S) ->
     {ok, Actions, same, S}.
 
 last_version_entry(Obj, T, P) ->
-    io:fwrite("last_version_entry(~p)~n", [Obj]),
+    unsplit:log_write(normal, "last_version_entry(~p)~n", [Obj]),
     compare(Obj, T, P, fun(A, B) when A < B -> left;
 			  (A, B) when A > B -> right;
 			  (_, _) -> neither
 		       end).
 
 compare(Obj, T, P, Comp) ->
-    io:fwrite("compare(~p)~n", [Obj]),
+    unsplit:log_write("compare(~p)~n", [Obj]),
     case Obj of
         {A, []} -> {write, A};
         {[], B} -> {write, B};

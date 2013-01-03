@@ -36,6 +36,7 @@
   {registered, []},
   {mod, {unsplit, []}},
   {env, [
-         {reporter, unsplit_reporter}
+         {reporter, unsplit_reporter},
+         {log_fun, {unsplit, default_log_fun}}
         ]}
  ]}.

@@ -34,6 +34,10 @@
 -export([get_reporter/0,
          report_inconsistency/4, report_inconsistency/5]).
 
+-export([get_logger/0,
+         default_log_fun/2,
+         log_write/2, log_write/3, log_write/4]).
+
 
 %% application start/stop API
 -export([start/2, stop/1]).
@@ -58,6 +62,40 @@ report_inconsistency(Tab, Key, ObjA, ObjB) ->
 %%
 report_inconsistency(Reporter, Tab, Key, ObjA, ObjB) ->
     Reporter:inconsistency(Tab, Key, ObjA, ObjB).
+
+
+%% @spec get_logger() -> unsplit:log_fun()
+%% @doc Look up the predefined callback function for logging
+%%
+get_logger() ->
+    {ok, {Module, FunctionName}} = application:get_env(unsplit, log_fun),
+    fun(LogType, Message) -> Module:FunctionName(LogType, Message) end.
+
+%% @spec default_log_fun(LogType :: unsplit:log_type(), Message :: string()) -> 'ok'
+%% @doc Default implementation of an unsplit log function
+%%
+default_log_fun(normal, Message) ->
+    io:fwrite(Message);
+default_log_fun(error, Message) ->
+    error_logger:format(Message, []).
+
+%% @spec log_write(LogType :: unsplit:log_type(), Message :: string()) -> 'ok'
+%% @doc Writes a log message to the predefined logger
+%%
+log_write(LogType, Message) ->
+    log_write(LogType, Message, []).
+
+%% @spec log_write(LogType :: unsplit:log_type(), Format :: string(), Data :: [any()]) -> 'ok'
+%% @doc Writes a formatted log message to the predefined logger
+%%
+log_write(LogType, Format, Data) ->
+    log_write(get_logger(), LogType, Format, Data).
+
+%% @spec log_write(Logger :: unsplit:log_fun(), LogType :: unsplit:log_type(), Format :: string(), Data :: [any()]) -> 'ok'
+%% @doc Writes a formatted log message to the predefined logger
+%%
+log_write(Logger, LogType, Format, Data) ->
+    Logger(LogType, io_lib:format(Format, Data)).
 
 
 %% @spec start(Type, Arg) -> {ok, pid()}
