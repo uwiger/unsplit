@@ -36,7 +36,7 @@
 -record(state, {}).
 -record(st, {module, function, extra_args = [],
              modstate,
-             table, attributes,
+             table, attributes, nodes,
              remote,
              chunk,
              strategy = default_strategy(),
@@ -102,7 +102,7 @@ handle_cast(_Msg, State) ->
 %%                                       {stop, Reason, State}
 %% Description: Handling all non call/cast messages
 %%--------------------------------------------------------------------
-handle_info({mnesia_system_event, 
+handle_info({mnesia_system_event,
              {inconsistent_database, Context, Node}}, State) ->
     io:fwrite("inconsistency. Context = ~p; Node = ~p~n", [Context, Node]),
     Res = global:trans(
@@ -199,7 +199,7 @@ do_stitch({Tab, Ns, {M, F, XArgs}} = TM, Remote) ->
     Attrs = mnesia:table_info(Tab, attributes),
     S0 = #st{module = M, function = F, extra_args = XArgs,
              table = Tab, attributes = Attrs,
-             remote = Remote,
+             remote = Remote, nodes=Ns,
              chunk = get_table_chunk_factor(Tab),
              strategy = default_strategy()},
     io:fwrite("Calling ~p:~p(init, ~p)", [M,F,[Tab,Attrs|XArgs]]),
@@ -245,13 +245,13 @@ run_stitch(#st{table = Tab,
 	       strategy = {Ms,Fs}, remote = Remote} = St) ->
     {ok, Objs, MSt1} = Ms:Fs(Tab, Remote, MSt),
     run_stitch(check_return(M:F(Objs, MSt1), St));
-run_stitch(#st{table = Tab, 
-               module = M, function = F, modstate = MSt,
+run_stitch(#st{table = Tab,
+               module = M, function = F, modstate = MSt, nodes=Nodes,
                strategy = all_keys, remote = Remote} = St) ->
-    Keys = mnesia:dirty_all_keys(Tab),
+    Keys=get_all_keys(Tab,Nodes),
     lists:foldl(
       fun(K, Sx) ->
-              [_] = A = mnesia:read({Tab,K}),  % assert that A is non-empty
+              A = mnesia:read({Tab,K}),  % assert that A is non-empty
               B = get_remote_obj(Remote, Tab, K),
               if A == B ->
                       Sx;
@@ -259,6 +259,9 @@ run_stitch(#st{table = Tab,
                       check_return(M:F([{A, B}], MSt), Sx)
               end
       end, St, Keys).
+
+get_all_keys(Tab,Nodes)->
+    lists:umerge([lists:sort(rpc:call(Node, mnesia, dirty_all_keys, [Tab])) || Node<-Nodes]).
 
 get_remote_obj(Remote, Tab, Key) ->
     ask_remote(Remote, {get_obj, Tab, Key}).
@@ -309,8 +312,8 @@ affected_tables(IslandA, IslandB) ->
                         [mnesia:table_info(T, C) ||
 			    C <- backend_types()]),
               io:fwrite("nodes_of(~p) = ~p~n", [T, Nodes]),
-              case {intersection(IslandA, Nodes), 
-                    intersection(IslandB, Nodes)} of 
+              case {intersection(IslandA, Nodes),
+                    intersection(IslandB, Nodes)} of
                   {[_|_], [_|_]} ->
                       [{T, Nodes}|Acc];
                   _ ->
