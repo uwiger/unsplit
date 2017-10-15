@@ -2,3 +2,6 @@
 *~
 /deps
 /.eunit
+/doc
+/logs
+
