@@ -4,4 +4,8 @@
 /.eunit
 /doc
 /logs
+_build
+ct_*
+jquery*
+*.html
 

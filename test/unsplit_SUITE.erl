@@ -13,7 +13,7 @@
 %% -define(ERL_FLAGS, "-kernel dist_auto_connect once -pa ../../ -pa ../../../ebin/").
 -define(ERL_FLAGS, "-kernel dist_auto_connect once").
 -define(TABLE, test1).
--define(NODES, ['mn1@localhost', 'mn2@localhost']).
+-define(NODES, ['mn1', 'mn2']).
 -define(DISCONNECT_TIME, 4000).
 -define(UNSPLIT_TIMEOUT, 5000).
 -record(?TABLE,{key,modified=erlang:now(),value}).
@@ -24,10 +24,11 @@ all() ->
 
 
 init_per_suite(Conf) ->
+    net_kernel:start(['test@127.0.0.1', longnames]),
     Nodes = ct:get_config(nodes, ?NODES),
     DisconnectTime = ct:get_config(disconnect_time, ?DISCONNECT_TIME),
     UnsplitTimeout = ct:get_config(unsplit_timeout, ?UNSPLIT_TIMEOUT),
-    Host = get_host(),
+    Host = '127.0.0.1',
     ErlFlags = lists:flatten([?ERL_FLAGS,
 			      get_path_flags(),
 			     " -pa ", filename:absname(
@@ -41,13 +42,14 @@ init_per_suite(Conf) ->
                 end,
 
     NodeNames = lists:map(StartNode, Nodes),
+    ct:print("started things ~n",[]),
     [{disconnect_time, DisconnectTime},
      {unsplit_timeout, UnsplitTimeout},
      {nodes, NodeNames}|Conf].
 
 end_per_suite(_Conf) ->
     Nodes = ct:get_config(nodes,?NODES),
-    Host = get_host(),
+    Host = '127.0.0.1',
     StopNode = fun(Node)->
                        {ok, _NodeName} = ct_slave:stop(Host, Node)
                end,
@@ -143,12 +145,6 @@ write(Records)->
                                   end, Records)
             end,
     mnesia:transaction(Trans).
-
-get_host()->
-    [_, H] = re:split(atom_to_list(node()),"@",[{return,list}]),
-    list_to_atom(H).
-    %% {ok, HostS} = inet:gethostname(),
-    %% list_to_atom(HostS).
 
 get_path_flags() ->
     [ [[" -",atom_to_list(K)," ",D] || D <- V]
