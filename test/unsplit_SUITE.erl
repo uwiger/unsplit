@@ -25,33 +25,34 @@ all() ->
 
 init_per_suite(Conf) ->
     net_kernel:start(['test@127.0.0.1', longnames]),
+
+    % Allow spawned nodes to fetch all code from this node
+    % Grabbed this from phoenix and it seems necessary
+    erl_boot_server:start([]),
+    {ok, Ipv4} = inet:parse_ipv4_address("127.0.0.1"),
+    erl_boot_server:add_slave(Ipv4),
+
     Nodes = ct:get_config(nodes, ?NODES),
     DisconnectTime = ct:get_config(disconnect_time, ?DISCONNECT_TIME),
     UnsplitTimeout = ct:get_config(unsplit_timeout, ?UNSPLIT_TIMEOUT),
     Host = '127.0.0.1',
-    ErlFlags = lists:flatten([?ERL_FLAGS,
-			      get_path_flags(),
-			     " -pa ", filename:absname(
-					filename:dirname(code:which(?MODULE)))]),
-    ct:print("ErlFlags = ~p~n", [ErlFlags]),
+
     StartNode = fun(Node)->
                         ct:print("starting node ~p, on host ~p ~n",[Node, Host]),
-                        {ok, NodeName} = ct_slave:start(Host, Node,
-                                                        [{erl_flags, ErlFlags}]),
-                        NodeName
+                        {ok, StartedNode} = slave:start(Host, Node, "-loader inet -hosts 127.0.0.1 -setcookie " ++ atom_to_list(erlang:get_cookie())),
+                        StartedNode
                 end,
 
     NodeNames = lists:map(StartNode, Nodes),
-    ct:print("started things ~n",[]),
+    ct:print("started things ~n ~p",[NodeNames]),
     [{disconnect_time, DisconnectTime},
      {unsplit_timeout, UnsplitTimeout},
      {nodes, NodeNames}|Conf].
 
 end_per_suite(_Conf) ->
     Nodes = ct:get_config(nodes,?NODES),
-    Host = '127.0.0.1',
     StopNode = fun(Node)->
-                       {ok, _NodeName} = ct_slave:stop(Host, Node)
+                       ok = slave:stop(Node)
                end,
     lists:map(StopNode, Nodes),
     ok.
