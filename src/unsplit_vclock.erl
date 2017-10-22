@@ -45,7 +45,6 @@
 % @type vclock() = [vc_entry].
 % @type   vc_entry() = {node(), {counter(), timestamp()}}.
 % The timestamp is present but not used, in case a client wishes to inspect it.
-% @type   node() = term().
 % Nodes can have any term() as a name, but they must differ from each other.
 % @type   counter() = integer().
 % @type   timestamp() = integer().
