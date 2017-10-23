@@ -14,8 +14,8 @@
 -define(ERL_FLAGS, "-kernel dist_auto_connect once").
 -define(TABLE, test1).
 -define(NODES, ['mn1', 'mn2']).
--define(DISCONNECT_TIME, 4000).
--define(UNSPLIT_TIMEOUT, 5000).
+-define(DISCONNECT_TIME, 100).
+-define(UNSPLIT_TIMEOUT, 500).
 -record(?TABLE, {key, modified=erlang:timestamp(), value}).
 %%% Macros
 
@@ -71,72 +71,73 @@ split1(Conf)->
     DisconnectTime = get_conf(disconnect_time, Conf),
     UnsplitTimeout = get_conf(unsplit_timeout, Conf),
     Nodes = [M, S|_Rest] = get_conf(nodes, Conf),
-    ct:print("Initial table size~n"),
-    print_table_size(Nodes, ?TABLE),
+    ct:print("Initial tables~n"),
+    print_tables(Nodes, ?TABLE),
     ct:print("inserting records~n"),
     {atomic, ok} = write(M, [#?TABLE{key=1, value=a}, #?TABLE{key=2, value=a}]),
-    print_table_size(Nodes, ?TABLE),
-    ct:print("disconnecting nodes~n"),
+    print_tables(Nodes, ?TABLE),
+    ct:print("disconnecting node ~p from ~p", [M, S]),
     disconnect(M, S),
-    ct:print("inserting records on one node, while the other one is disconnected~n"),
-    {atomic, ok} = write(M, [#?TABLE{key=3, value=b}, #?TABLE{key=4, value=b}]),
-    print_table_size(Nodes, ?TABLE),
+    ct:print("updating records on one node, while the other one is disconnected~n"),
     timer:sleep(DisconnectTime),
+    {atomic, ok} = write(M, [#?TABLE{key=1, modified=erlang:timestamp() ,value=c}, #?TABLE{key=2, modified=erlang:timestamp(), value=d}]),
+    print_tables(Nodes, ?TABLE),
     ct:print("reconnecting nodes~n"),
-    connect(S, M),
+    connect(M, S),
     timer:sleep(UnsplitTimeout),
-    print_table_size(Nodes, ?TABLE),
-    % the below should be false as there is no default merge strategy setup for unsplit, currently
-    % this looks like a todo thing (why it was true, before)
-    false = compare_table_size(Nodes, ?TABLE).
-
-
-compare_table_size([Node1, Node2|_], Table)->
-    table_size(Node1, Table) == table_size(Node2, Table).
+    {MasterTable, SlaveTable} = print_tables(Nodes, ?TABLE),
+    true.
+    % MasterTable = SlaveTable.
 
 table_size(Node, Table)->
     rpc:call(Node, mnesia, table_info,[Table, size]).
 
-print_table_size([M,S|_], Table)->
-    ct:print("master size = ~p~n", [table_size(M, Table)]),
-    ct:print("slave size = ~p~n", [table_size(S, Table)]).
+print_tables([M,S|_], Table)->
+    MasterTable = rpc:call(M, ets, tab2list, [Table]),
+    SlaveTable = rpc:call(S, ets, tab2list, [Table]),
+    ct:print("master table = ~p~n", [MasterTable]),
+    ct:print("slave table = ~p~n", [SlaveTable]),
+    {MasterTable, SlaveTable}.
 
 get_conf(Key, Conf)->
     proplists:get_value(Key, Conf).
 
 
 terminate_nodes(Nodes)->
-    Terminate = fun(Node)->
-                        rpc:call(Node, application, stop, [unsplit]),
-                        rpc:call(Node, mnesia, stop,[])
-                end,
-    lists:foreach(Terminate, Nodes).
-
+    rpc:multicall(Nodes, application, stop, [sasl]),
+    rpc:multicall(Nodes, application, stop, [unsplit]),
+    rpc:multicall(Nodes, mnesia, stop, []),
+    rpc:call(hd(Nodes), mnesia, delete_schema, [Nodes]).
 
 init_nodes(Nodes)->
-    Init = fun(Node)->
-                          % Allow spawned nodes to fetch all code from this node
-                          {Mod, Bin, File} = code:get_object_code(?MODULE),
-                          rpc:call(Node, code, load_binary, [Mod, File, Bin]),
-                          rpc:call(Node, mnesia, delete_schema, [Node]),
-                          rpc:call(Node, mnesia, start, []),
-                          rpc:call(Node, application, start, [unsplit]),
-                          rpc:call(Node, mnesia, create_schema, [Nodes]),
-                          rpc:call(Node, mnesia, change_config, [extra_db_nodes, Nodes--[Node]]),
-                          rpc:call(Node, mnesia, delete_table, [?TABLE]),
-                          rpc:call(Node, mnesia, create_table, [?TABLE, [{ram_copies, Nodes},
-                                                                 {attributes, [key, modified, value]},
-                                                                 {user_properties,
-                                                                  [{unsplit_method, {unsplit_lib, last_modified, []}}]
-                                                                 }]
-                          ])
-                  end,
-    lists:foreach(Init, Nodes).
+    % Load this module on new nodes
+    {Mod, Bin, File} = code:get_object_code(?MODULE),
+    rpc:multicall(Nodes, code, load_binary, [Mod, File, Bin]),
+
+    FirstNode = hd(Nodes),
+    rpc:call(FirstNode, mnesia, create_schema, [Nodes]),
+
+    rpc:multicall(Nodes, application, start, [sasl]),
+    rpc:multicall(Nodes, mnesia, start, []),
+    rpc:multicall(Nodes, application, start, [unsplit]),
+
+    rpc:call(FirstNode, mnesia, create_table, [?TABLE,
+      [{ram_copies, Nodes},
+        {attributes, [key, modified, value]},
+        {user_properties,
+        [{unsplit_method, {unsplit_lib, last_modified, []}}]
+      }]
+    ]).
 
 disconnect(Master, Slave)->
-    rpc:call(Master, erlang, disconnect_node, [Slave]).
+    true = rpc:call(Master, erlang, disconnect_node, [Slave]),
+    NodeList = rpc:call(Master, erlang, nodes, []),
+    ct:print("node list is now ~p", [NodeList]).
+
 connect(Master, Slave)->
-    rpc:call(Master, net_kernel, connect_node, [Slave]).
+    true = rpc:call(Master, net_kernel, connect_node, [Slave]),
+    NodeList = rpc:call(Master, erlang, nodes, []),
+    ct:print("node list is now ~p", [NodeList]).
 
 write(Node, Records)->
     rpc:call(Node, ?MODULE, write, [Records]).
