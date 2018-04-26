@@ -248,10 +248,18 @@ run_stitch(#st{table = Tab,
 run_stitch(#st{table = Tab, 
                module = M, function = F, modstate = MSt,
                strategy = all_keys, remote = Remote} = St) ->
-    Keys = mnesia:dirty_all_keys(Tab),
+
+    RemoteKeys = rpc:call(Remote, mnesia, dirty_all_keys, [Tab]),
+    LocalKeys = mnesia:dirty_all_keys(Tab),
+%%    Keys = LocalKeys ++ (RemoteKeys -- LocalKeys),
+    Keys = mnesia_lib:uniq(
+      LocalKeys ++ RemoteKeys
+%%      lists:merge(lists:sort(LocalKeys), lists:sort(RemoteKeys))
+    ),
+
     lists:foldl(
       fun(K, Sx) ->
-              [_] = A = mnesia:read({Tab,K}),  % assert that A is non-empty
+              A = mnesia:read({Tab,K}),  % assert that A is non-empty
               B = get_remote_obj(Remote, Tab, K),
               if A == B ->
                       Sx;
