@@ -93,31 +93,31 @@ change_existing_records(Conf) ->
   {atomic, ok} = write(Node2, [Element2V1]),
   ct:sleep(100),
 
-  ckeck_element(Node1, K1, Element1V1),
-  ckeck_element(Node2, K1, Element1V1),
-  ckeck_element(Node1, K2, Element2V1),
-  ckeck_element(Node2, K2, Element2V1),
+  check_element(Node1, K1, Element1V1),
+  check_element(Node2, K1, Element1V1),
+  check_element(Node1, K2, Element2V1),
+  check_element(Node2, K2, Element2V1),
 
   disconnect(Node1, Node2),
 
   {atomic, ok} = write(Node1, [Element1V2]),
   {atomic, ok} = write(Node2, [Element2V2]),
 
-  ckeck_element(Node1, K1, Element1V2),
-  ckeck_element(Node2, K1, Element1V1),
-  ckeck_element(Node1, K2, Element2V1),
-  ckeck_element(Node2, K2, Element2V2),
+  check_element(Node1, K1, Element1V2),
+  check_element(Node2, K1, Element1V1),
+  check_element(Node1, K2, Element2V1),
+  check_element(Node2, K2, Element2V2),
 
   connect(Node1, Node2),
 
-  ckeck_element(Node1, K1, Element1V2),
-  ckeck_element(Node2, K1, Element1V2),
-  ckeck_element(Node1, K2, Element2V2),
-  ckeck_element(Node2, K2, Element2V2),
+  check_element(Node1, K1, Element1V2),
+  check_element(Node2, K1, Element1V2),
+  check_element(Node1, K2, Element2V2),
+  check_element(Node2, K2, Element2V2),
 
   ok.
 
-ckeck_element(Node, Key, Element) ->
+check_element(Node, Key, Element) ->
   {atomic, [Element]} = read(Node, Key).
 
 compare_table_size([Node1, Node2 | _], Table) ->
