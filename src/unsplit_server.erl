@@ -104,17 +104,17 @@ handle_cast(_Msg, State) ->
 %%--------------------------------------------------------------------
 handle_info({mnesia_system_event, 
              {inconsistent_database, Context, Node}}, State) ->
-    io:fwrite("inconsistency. Context = ~p; Node = ~p~n", [Context, Node]),
+    unsplit:log_write(normal, "inconsistency. Context = ~p; Node = ~p~n", [Context, Node]),
     Res = global:trans(
             {?LOCK, self()},
             fun() ->
-                    io:fwrite("have lock...~n", []),
+                    unsplit:log_write(normal, "have lock...~n", []),
                     stitch_together(node(), Node)
             end),
-    io:fwrite("Res = ~p~n", [Res]),
+    unsplit:log_write(normal, "Res = ~p~n", [Res]),
     {noreply, State};
 handle_info(_Info, State) ->
-    io:fwrite("Got event: ~p~n", [_Info]),
+    unsplit:log_write(normal, "Got event: ~p~n", [_Info]),
     {noreply, State}.
 
 %%--------------------------------------------------------------------
@@ -142,7 +142,7 @@ code_change(_OldVsn, State, _Extra) ->
 stitch_together(NodeA, NodeB) ->
     case lists:member(NodeB, mnesia:system_info(running_db_nodes)) of
         true ->
-            io:fwrite("~p already stitched, it seems. All is well.~n", [NodeB]),
+            unsplit:log_write(normal, "~p already stitched, it seems. All is well.~n", [NodeB]),
             ok;
         false ->
             do_stitch_together(NodeA, NodeB)
@@ -152,14 +152,14 @@ do_stitch_together(NodeA, NodeB) ->
     [IslandA, IslandB] =
         [rpc:call(N, mnesia, system_info, [running_db_nodes]) ||
             N <- [NodeA, NodeB]],
-    io:fwrite("IslandA = ~p;~nIslandB = ~p~n", [IslandA, IslandB]),
+    unsplit:log_write(normal, "IslandA = ~p;~nIslandB = ~p~n", [IslandA, IslandB]),
     TabsAndNodes = affected_tables(IslandA, IslandB),
     Tabs = [T || {T,_} <- TabsAndNodes],
-    io:fwrite("Affected tabs = ~p~n", [Tabs]),
+    unsplit:log_write(normal, "Affected tabs = ~p~n", [Tabs]),
     DefaultMethod = default_method(),
     TabMethods = [{T, Ns, get_method(T, DefaultMethod)}
                   || {T,Ns} <- TabsAndNodes],
-    io:fwrite("Methods = ~p~n", [TabMethods]),
+    unsplit:log_write(normal, "Methods = ~p~n", [TabMethods]),
     mnesia_controller:connect_nodes(
       [NodeB],
       fun(MergeF) ->
@@ -169,7 +169,7 @@ do_stitch_together(NodeA, NodeB) ->
                       %% For now, assume that we have merged with the right
                       %% node, and not with others that could also be
                       %% consistent (mnesia gurus, how does this work?)
-                      io:fwrite("stitching: ~p~n", [TabMethods]),
+                      unsplit:log_write(normal, "stitching: ~p~n", [TabMethods]),
                       stitch_tabs(TabMethods, NodeB),
                       Res;
                   Other ->
@@ -181,7 +181,7 @@ show_locks(OtherNode) ->
     Info = [{node(), mnesia_locker:get_held_locks()},
             {OtherNode, rpc:call(OtherNode,
                                  mnesia_locker,get_held_locks,[])}],
-    io:fwrite("Held locks = ~p~n", [Info]).
+    unsplit:log_write(normal, "Held locks = ~p~n", [Info]).
 
 
 stitch_tabs(TabMethods, NodeB) ->
@@ -193,16 +193,16 @@ stitch_tabs(TabMethods, NodeB) ->
 
 
 do_stitch({Tab, Ns, {M, F, XArgs}} = TM, Remote) ->
-    io:fwrite("do_stitch(~p, ~p).~n", [TM,Remote]),
+    unsplit:log_write(normal, "do_stitch(~p, ~p).~n", [TM,Remote]),
     HasCopy = lists:member(Remote, Ns),
-    io:fwrite("~p has a copy of ~p? -> ~p~n", [Remote, Tab, HasCopy]),
+    unsplit:log_write(normal, "~p has a copy of ~p? -> ~p~n", [Remote, Tab, HasCopy]),
     Attrs = mnesia:table_info(Tab, attributes),
     S0 = #st{module = M, function = F, extra_args = XArgs,
              table = Tab, attributes = Attrs,
              remote = Remote,
              chunk = get_table_chunk_factor(Tab),
              strategy = default_strategy()},
-    io:fwrite("Calling ~p:~p(init, ~p)", [M,F,[Tab,Attrs|XArgs]]),
+    unsplit:log_write(normal, "Calling ~p:~p(init, ~p)", [M,F,[Tab,Attrs|XArgs]]),
     try
         run_stitch(check_return(M:F(init, [Tab, Attrs | XArgs]), S0))
     catch
@@ -213,7 +213,7 @@ do_stitch({Tab, Ns, {M, F, XArgs}} = TM, Remote) ->
 -spec check_return(unsplit:merge_ret(), #st{}) -> #st{}.
 
 check_return(Ret, S) ->
-    io:fwrite(" -> ~p~n", [Ret]),
+    unsplit:log_write(normal, " -> ~p~n", [Ret]),
     case Ret of
         stop -> throw(?DONE);
         {ok, St} ->
@@ -308,7 +308,7 @@ affected_tables(IslandA, IslandB) ->
               Nodes = lists:concat(
                         [mnesia:table_info(T, C) ||
 			    C <- backend_types()]),
-              io:fwrite("nodes_of(~p) = ~p~n", [T, Nodes]),
+              unsplit:log_write(normal, "nodes_of(~p) = ~p~n", [T, Nodes]),
               case {intersection(IslandA, Nodes), 
                     intersection(IslandB, Nodes)} of 
                   {[_|_], [_|_]} ->
