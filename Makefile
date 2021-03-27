@@ -15,8 +15,11 @@ deps:
 eunit:
 	./rebar eunit
 
-test:
-	./rebar ct
+ct_run:
+	ct_run -noshell -pa "$(addprefix $(CURDIR), /ebin)" "$(addprefix $(CURDIR), /.)"  -include "$(addprefix $(CURDIR), /include)"  -name test@127.0.0.1 -logdir "$(addprefix $(CURDIR), /logs)" -env TEST_DIR "$(addprefix $(CURDIR), /test)" -ct_config test/test.config -dir test  2>&1 | tee -a $(addprefix $(CURDIR), /logs/raw.log)
+
+test: ct_run
+# ./rebar ct
 
 docs: doc
 doc:

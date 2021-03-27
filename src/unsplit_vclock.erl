@@ -45,7 +45,6 @@
 % @type vclock() = [vc_entry].
 % @type   vc_entry() = {node(), {counter(), timestamp()}}.
 % The timestamp is present but not used, in case a client wishes to inspect it.
-% @type   node() = term().
 % Nodes can have any term() as a name, but they must differ from each other.
 % @type   counter() = integer().
 % @type   timestamp() = integer().
@@ -59,20 +58,20 @@ fresh() ->
 %
 % @doc Serves as both a trivial test and some example code.
 example_test() ->
-    A = vclock:fresh(),
-    B = vclock:fresh(),
-    A1 = vclock:increment(a, A),
-    B1 = vclock:increment(b, B),
-    true = vclock:descends(A1,A),
-    true = vclock:descends(B1,B),
-    false = vclock:descends(A1,B1),
-    A2 = vclock:increment(a, A1),
-    C = vclock:merge([A2, B1]),
-    C1 = vclock:increment(c, C),
-    true = vclock:descends(C1, A2),
-    true = vclock:descends(C1, B1),
-    false = vclock:descends(B1, C1),
-    false = vclock:descends(B1, A1),
+    A = unsplit_vclock:fresh(),
+    B = unsplit_vclock:fresh(),
+    A1 = unsplit_vclock:increment(a, A),
+    B1 = unsplit_vclock:increment(b, B),
+    true = unsplit_vclock:descends(A1,A),
+    true = unsplit_vclock:descends(B1,B),
+    false = unsplit_vclock:descends(A1,B1),
+    A2 = unsplit_vclock:increment(a, A1),
+    C = unsplit_vclock:merge([A2, B1]),
+    C1 = unsplit_vclock:increment(c, C),
+    true = unsplit_vclock:descends(C1, A2),
+    true = unsplit_vclock:descends(C1, B1),
+    false = unsplit_vclock:descends(B1, C1),
+    false = unsplit_vclock:descends(B1, A1),
     ok.
 
 % @doc Return true if Va is a direct descendant of Vb, else false -- remember, a vclock is its own descendant!
@@ -200,6 +199,11 @@ prune_vclock1(V,Now,BProps) ->
                 false -> prune_vclock1(V,Now,BProps,HeadTime)
             end
     end.
+
+% @private taken from https://bitbucket.org/justin/riak/src/13d1a6e9dbde0168e7a11d714fe08cc6d9b1bc76/apps/riak/src/riak_util.erl?at=default&fileviewer=file-view-default#riak_util.erl-30 old riak code
+moment() ->
+    calendar:datetime_to_gregorian_seconds(calendar:universal_time()).
+
 % @private
 prune_vclock1(V,Now,BProps,HeadTime) ->
     % has a precondition that V is longer than small and older than young
@@ -214,7 +218,7 @@ prune_vclock1(V,Now,BProps,HeadTime) ->
 
 prune_small_test() ->
     % vclock with less entries than small_vclock will be untouched
-    Now = riak_util:moment(),
+    Now = moment(),
     OldTime = Now - 32000000,
     SmallVC = [{<<"1">>, {1, OldTime}},
                {<<"2">>, {2, OldTime}},
@@ -224,7 +228,7 @@ prune_small_test() ->
 
 prune_young_test() ->
     % vclock with all entries younger than young_vclock will be untouched
-    Now = riak_util:moment(),
+    Now = moment(),
     NewTime = Now - 1,
     VC = [{<<"1">>, {1, NewTime}},
           {<<"2">>, {2, NewTime}},
@@ -235,7 +239,7 @@ prune_young_test() ->
 prune_big_test() ->
     % vclock not preserved by small or young will be pruned down to
     % no larger than big_vclock entries
-    Now = riak_util:moment(),
+    Now = moment(),
     NewTime = Now - 1000,
     VC = [{<<"1">>, {1, NewTime}},
           {<<"2">>, {2, NewTime}},
@@ -247,7 +251,7 @@ prune_big_test() ->
 prune_old_test() ->
     % vclock not preserved by small or young will be pruned down to
     % no larger than big_vclock and no entries more than old_vclock ago
-    Now = riak_util:moment(),
+    Now = moment(),
     NewTime = Now - 1000,
     OldTime = Now - 100000,    
     VC = [{<<"1">>, {1, NewTime}},
